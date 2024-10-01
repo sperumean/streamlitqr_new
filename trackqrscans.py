@@ -85,31 +85,98 @@ def plot_scan_history_by_date(df, total_scans):
     # Format dates without the year
     df['DateFormatted'] = df['Date'].dt.strftime('%m/%d')
 
+    # Set custom colors
+    bar_color = '#A17401'  # Gold color for bars
+    background_color = '#022454'  # Dark blue for background
+    text_color = 'white'  # White text for contrast
+
     # Set Seaborn style
     sns.set_style('whitegrid')
 
     # Create the bar plot
     fig, ax = plt.subplots(figsize=(12, 7))
-    sns.barplot(x='DateFormatted', y='ScanCount', data=df, color='skyblue', ax=ax)
+
+    # Set the background color
+    fig.patch.set_facecolor(background_color)
+    ax.set_facecolor(background_color)
+
+    # Create the bar plot with custom bar color
+    sns.barplot(x='DateFormatted', y='ScanCount', data=df, color=bar_color, ax=ax)
 
     # Customize the plot
-    ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Scan Count', fontsize=12)
-    ax.set_title('QR Code Scan History by Date', fontsize=16)
-    plt.xticks(rotation=45, ha='right')
+    ax.set_xlabel('Date', fontsize=12, color=text_color)
+    ax.set_ylabel('Scan Count', fontsize=12, color=text_color)
+    ax.set_title('QR Code Scan History by Date', fontsize=16, color=text_color)
+    ax.tick_params(colors=text_color)
+    plt.xticks(rotation=45, ha='right', color=text_color)
+    plt.yticks(color=text_color)
+
+    # Remove spines
+    for spine in ax.spines.values():
+        spine.set_visible(False)
 
     # Display the total number of scans
     plt.text(0.99, 0.99, f'Total Scans: {total_scans}', transform=ax.transAxes,
-             ha='right', va='top', fontsize=12, color='black')
+             ha='right', va='top', fontsize=12, color=text_color)
 
     plt.tight_layout()
     st.pyplot(fig)
+    
+def set_bg_color(bg_color, sidebar_color):
+    """
+    Set the background color of the Streamlit app and sidebar.
+
+    Args:
+        bg_color (str): Hex code of the main background color.
+        sidebar_color (str): Hex code of the sidebar background color.
+    """
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-color: {bg_color};
+        }}
+        .css-1d391kg {{
+            background-color: {sidebar_color};
+        }}
+        .css-1d391kg, .css-1d391kg * {{
+            color: white;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 
 def main():
-    """
-    Main function to fetch scan records and plot the scan history by date.
-    """
-    st.title("QR Code Scan History")
+    set_bg_color('#022454', '#022454')  # Set background colors
+
+    st.markdown(
+        "<h1 style='color: white;'>QR Code Scan History:</h1>",
+        unsafe_allow_html=True
+    )
+
+    # Adjust text colors for sidebar and widgets
+    st.markdown(
+        """
+        <style>
+        /* Sidebar header */
+        .css-1d391kg h2 {
+            color: white;
+        }
+        /* Sidebar labels */
+        .css-1d391kg label {
+            color: white;
+        }
+        /* Date input text */
+        .css-1d391kg .css-1e5imcs {
+            color: white;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
     # Fetch all data to get date range
     df_all, _ = fetch_scan_records_by_date()
