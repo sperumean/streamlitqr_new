@@ -68,13 +68,6 @@ def fetch_scan_records_by_date(start_date=None, end_date=None):
         return pd.DataFrame(), 0
 
 def plot_scan_history_by_date(df, total_scans):
-    """
-    Plot a bar chart of the scan history by date.
-
-    Args:
-        df (DataFrame): Contains date and scan count.
-        total_scans (int): Total number of scans.
-    """
     if df.empty:
         st.warning("No records to display for the selected period.")
         return
@@ -86,29 +79,25 @@ def plot_scan_history_by_date(df, total_scans):
     df['DateFormatted'] = df['Date'].dt.strftime('%m/%d')
 
     # Set custom colors
-    bar_color = '#A17401'  # Gold color for bars
-    background_color = '#022454'  # Dark blue for background
-    text_color = 'white'  # White text for contrast
+    bar_color = '#E0A100'  # Gold color for bars
+    text_color = 'white'   # White text for contrast
 
-    # Set Seaborn style
-    sns.set_style('whitegrid')
+    # Increase figure size
+    fig, ax = plt.subplots(figsize=(16, 9))  # Adjust figsize as needed
 
-    # Create the bar plot
-    fig, ax = plt.subplots(figsize=(12, 7))
-
-    # Set the background color
-    fig.patch.set_facecolor(background_color)
-    ax.set_facecolor(background_color)
+    # Set figure and axes background to transparent
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
 
     # Create the bar plot with custom bar color
     sns.barplot(x='DateFormatted', y='ScanCount', data=df, color=bar_color, ax=ax)
 
     # Customize the plot
-    ax.set_xlabel('Date', fontsize=12, color=text_color)
-    ax.set_ylabel('Scan Count', fontsize=12, color=text_color)
-    ax.set_title('QR Code Scan History by Date', fontsize=16, color=text_color)
+    ax.set_xlabel('Date', fontsize=20, color=text_color)
+    ax.set_ylabel('Scan Count', fontsize=20, color=text_color)
+    ax.set_title('', fontsize=20, color=text_color)
     ax.tick_params(colors=text_color)
-    plt.xticks(rotation=45, ha='right', color=text_color)
+    plt.xticks(rotation=0, ha='right', color=text_color)
     plt.yticks(color=text_color)
 
     # Remove spines
@@ -117,10 +106,78 @@ def plot_scan_history_by_date(df, total_scans):
 
     # Display the total number of scans
     plt.text(0.99, 0.99, f'Total Scans: {total_scans}', transform=ax.transAxes,
-             ha='right', va='top', fontsize=12, color=text_color)
+             ha='right', va='top', fontsize=40, color=text_color)
 
     plt.tight_layout()
-    st.pyplot(fig)
+
+
+    # Save the figure to a buffer
+    from io import BytesIO
+    buf = BytesIO()
+    fig.savefig(buf, format="png", transparent=True)
+    buf.seek(0)
+    import base64
+    img_base64 = base64.b64encode(buf.read()).decode()
+
+    # Center the plot using HTML
+    st.markdown(
+        f'''
+        <div style="display: flex; justify-content: center;">
+            <img src="data:image/png;base64,{img_base64}" style="max-width: 170%; height: auto;">
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
+    
+def set_text_styles():
+    st.markdown(
+        """
+        <style>
+        /* Main content text */
+        .stApp, .stApp * {
+            color: white;
+            background-color: transparent;
+        }
+
+        /* Sidebar background */
+        .css-1d391kg {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Sidebar text */
+        .css-1d391kg h2, .css-1d391kg label {
+            color: white;
+        }
+
+        /* Style the buttons */
+        .stButton > button, .stDownloadButton > button {
+            background-color: #022454;
+            color: white;
+            border-radius: 8px;
+            height: 50px;
+            width: 100%;
+            font-size: 16px;
+        }
+        .stButton > button:hover, .stDownloadButton > button:hover {
+            background-color: #A17401;
+            color: white;
+        }
+
+        /* Style date input widgets */
+        .stDateInput input {
+            background-color: #022454;
+            color: white;
+        }
+        .stDateInput [role="button"] {
+            background-color: #022454;
+            color: white;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
     
 def set_bg_color(bg_color, sidebar_color):
     """
@@ -147,38 +204,65 @@ def set_bg_color(bg_color, sidebar_color):
         unsafe_allow_html=True
     )
 
+def set_background_image(image_url):
+    """
+    Sets a background image with an overlay for the Streamlit app.
+
+    Args:
+        image_url (str): URL of the background image.
+    """
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: linear-gradient(
+                rgba(3, 35, 90, 0.7),
+                rgba(3, 35, 90, 0.7)
+            ),
+            url("{image_url}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+def add_transparent_overlay():
+    st.markdown(
+        """
+        <style>
+        .overlay {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            background-color: rgba(0, 0, 90, 2); /* Adjust the alpha value for transparency */
+            z-index: 1;
+        }
+        </style>
+        <div class="overlay"></div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 def main():
-    set_bg_color('#022454', '#022454')  # Set background colors
+    # Set background image with overlay
+    background_image_url = 'https://calbaptist.edu/_resources/images/_news/2021-CBU-Campus-45.jpeg'
+    set_background_image(background_image_url)
+
+    # Set text styles
+    set_text_styles()
 
     st.markdown(
         "<h1 style='color: white;'>QR Code Scan History:</h1>",
         unsafe_allow_html=True
     )
 
-    # Adjust text colors for sidebar and widgets
-    st.markdown(
-        """
-        <style>
-        /* Sidebar header */
-        .css-1d391kg h2 {
-            color: white;
-        }
-        /* Sidebar labels */
-        .css-1d391kg label {
-            color: white;
-        }
-        /* Date input text */
-        .css-1d391kg .css-1e5imcs {
-            color: white;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Fetch all data to get date range
+    # Fetch data and proceed as usual
     df_all, _ = fetch_scan_records_by_date()
     if df_all.empty:
         st.warning("No scan records available.")
@@ -202,6 +286,8 @@ def main():
     # Download data as CSV
     csv = df.to_csv(index=False)
     st.download_button(label='Download Data as CSV', data=csv, file_name='scan_history.csv', mime='text/csv')
+
+
 
 if __name__ == "__main__":
     main()
