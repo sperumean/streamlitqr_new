@@ -123,7 +123,7 @@ def plot_scan_history_by_date(df, total_scans):
     st.markdown(
         f'''
         <div style="display: flex; justify-content: center;">
-            <img src="data:image/png;base64,{img_base64}" style="max-width: 170%; height: auto;">
+            <img src="data:image/png;base64,{img_base64}" style="max-width: 110%; height: auto;">
         </div>
         ''',
         unsafe_allow_html=True
